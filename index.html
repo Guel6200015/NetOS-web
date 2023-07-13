@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>netOS web</title>
+  <style>
+    /* Estilos para a barra de tarefas */
+    .barra-tarefas {
+      background-color: #0078D7;
+      color: #FFFFFF;
+      height: 40px;
+      padding: 5px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .botao {
+      display: inline-block;
+      padding: 5px 10px;
+      background-color: #0078D7;
+      color: #FFFFFF;
+      text-decoration: none;
+      margin-right: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .botao-iniciar {
+      background-color: #005CA3;
+    }
+
+    .botao-pesquisa {
+      background-color: #00457D;
+    }
+
+    /* Estilos para a área de trabalho */
+    .area-trabalho {
+      background-color: #FFFFFF;
+      height: calc(100% - 40px);
+      padding: 20px;
+      margin-bottom: 40px;
+    }
+
+    /* Estilos para o menu */
+    .menu {
+      position: absolute;
+      bottom: 50px;
+      left: 5px;
+      background-color: #FFFFFF;
+      padding: 10px;
+      border: 1px solid #000000;
+      display: none;
+    }
+
+    .menu-link {
+      display: flex;
+      align-items: center;
+      padding: 5px;
+      text-decoration: none;
+      color: #000000;
+    }
+
+    /* Estilos para os iframes */
+    .iframe-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+  <script>
+    // JavaScript para interação dos botões
+    window.onload = function() {
+      var botaoMenu = document.getElementById("botao-menu");
+      var menu = document.getElementById("menu");
+      var menuAberto = false;
+
+      botaoMenu.addEventListener("click", function() {
+        if (menuAberto) {
+          // Lógica para fechar o menu Iniciar
+          menu.style.display = "none";
+          menuAberto = false;
+        } else {
+          // Lógica para abrir o menu Iniciar
+          menu.style.display = "block";
+          menuAberto = true;
+        }
+      });
+
+      var menuLinks = menu.getElementsByClassName("menu-link");
+      for (var i = 0; i < menuLinks.length; i++) {
+        menuLinks[i].addEventListener("click", function() {
+          // Lógica para abrir um website do menu
+          var url = this.getAttribute("href");
+          window.open(url, "_blank");
+        });
+      }
+
+      // Coloque o código abaixo para rodar em tela cheia
+      var doc = window.document;
+      var docEl = doc.documentElement;
+
+      var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+      if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+        requestFullScreen.call(docEl);
+      }
+
+      var janelas = document.getElementsByClassName("janela");
+      var iframes = [];
+
+      // Adicione os websites mencionados anteriormente para os iframes
+      var websites = [
+        { url: "https://www.google.com", nome: "Net Explorer" },
+        { url: "https://games.msn.com", nome: "MSN Games" },
+        { url: "https://www.msn.com/pt-br/clima/", nome: "MSN Clima" },
+        { url: "https://www.youtube.com", nome: "YouTube" },
+        { url: "https://translate.google.com.br/", nome: "Google Translate" },
+        { url: "https://www.msn.com", nome: "MSN" },
+        { url: "https://web.whatsapp.com", nome: "WhatsApp Web" }
+      ];
+
+      for (var i = 0; i < janelas.length; i++) {
+        var randomWebsiteIndex = Math.floor(Math.random() * websites.length);
+        var website = websites[randomWebsiteIndex];
+        var iframe = document.createElement("iframe");
+        iframe.src = website.url;
+        iframe.classList.add("iframe-container");
+        janelas[i].appendChild(iframe);
+        iframes.push({ iframe: iframe, fixo: false, url: website.url, nome: website.nome });
+      }
+
+      // Função para alternar entre os websites nos iframes
+      function alternarWebsites(index) {
+        for (var i = 0; i < iframes.length; i++) {
+          if (i === index) {
+            iframes[i].iframe.style.display = "block";
+          } else {
+            iframes[i].iframe.style.display = "none";
+          }
+        }
+      }
+
+      // Inicializar com o primeiro website visível
+      alternarWebsites(0);
+
+      // Função para fixar ou desafixar um website na barra de tarefas
+      function toggleFixar(botao) {
+        var linkContainer = botao.parentNode;
+        var url = linkContainer.getAttribute("href");
+        var nome = linkContainer.getAttribute("data-nome");
+
+        for (var i = 0; i < iframes.length; i++) {
+          if (iframes[i].url === url) {
+            iframes[i].fixo = !iframes[i].fixo;
+            botao.classList.toggle("fixo");
+            if (iframes[i].fixo) {
+              fixarWebsite(url, nome);
+            } else {
+              desafixarWebsite(url);
+            }
+            break;
+          }
+        }
+      }
+
+      // Função para fixar um website na barra de tarefas
+      function fixarWebsite(url, nome) {
+        var link = document.createElement("a");
+        link.classList.add("botao");
+        link.href = url;
+        link.textContent = nome;
+
+        var botaoContainer = document.createElement("div");
+        botaoContainer.appendChild(link);
+        botaoContainer.classList.add("janela");
+
+        var barraTarefas = document.getElementById("barra-tarefas");
+        barraTarefas.appendChild(botaoContainer);
+      }
+
+      // Função para desafixar um website da barra de tarefas
+      function desafixarWebsite(url) {
+        var barraTarefas = document.getElementById("barra-tarefas");
+        var janelasFixas = barraTarefas.getElementsByClassName("janela");
+
+        for (var i = 0; i < janelasFixas.length; i++) {
+          var link = janelasFixas[i].getElementsByTagName("a")[0];
+          if (link && link.getAttribute("href") === url) {
+            barraTarefas.removeChild(janelasFixas[i]);
+            break;
+          }
+        }
+      }
+
+      // Botão "Pesquisa" para abrir uma nova janela do navegador com o site Google
+      var botaoPesquisa = document.createElement("button");
+      botaoPesquisa.id = "botao-pesquisa";
+      botaoPesquisa.classList.add("botao", "botao-pesquisa");
+      botaoPesquisa.textContent = "Pesquisa";
+      botaoPesquisa.addEventListener("click", function() {
+        window.open("https://www.google.com", "_blank");
+      });
+
+      var barraTarefas = document.getElementById("barra-tarefas");
+      barraTarefas.appendChild(botaoPesquisa);
+    };
+  </script>
+</head>
+<body>
+  <!-- Área de trabalho -->
+  <div class="area-trabalho">
+    <!-- Deixe a área de trabalho vazia -->
+  </div>
+
+  <!-- Barra de tarefas -->
+  <div id="barra-tarefas" class="barra-tarefas">
+    <button id="botao-menu" class="botao botao-iniciar">Iniciar</button>
+  </div>
+
+  <!-- Menu -->
+  <div id="menu" class="menu" style="display: none;">
+    <a class="menu-link" href="https://www.google.com" data-nome="Net Explorer">Net Explorer</a>
+    <a class="menu-link" href="https://games.msn.com" data-nome="MSN Games">MSN Games</a>
+    <a class="menu-link" href="https://www.msn.com/pt-br/clima/" data-nome="MSN Clima">MSN Clima</a>
+    <a class="menu-link" href="https://www.youtube.com" data-nome="YouTube">YouTube</a>
+    <a class="menu-link" href="https://translate.google.com.br/" data-nome="Google Translate">Google Translate</a>
+    <a class="menu-link" href="https://www.msn.com" data-nome="MSN">MSN</a>
+    <a class="menu-link" href="https://web.whatsapp.com" data-nome="WhatsApp Web">WhatsApp Web</a>
+  </div>
+</body>
+</html>
